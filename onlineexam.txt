@@ -1,119 +1,59 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Scanner;
 
-public class OnlineExamination extends JFrame implements ActionListener {
-    String[][] questions = {
-        {"What is the capital of India?", "Delhi", "Mumbai", "Kolkata", "Chennai", "Delhi"},
-        {"Who invented Java?", "James Gosling", "Dennis Ritchie", "Bjarne Stroustrup", "Guido van Rossum", "James Gosling"},
-        {"Which data structure follows FIFO?", "Queue", "Stack", "Tree", "Graph", "Queue"},
-        {"What does JVM stand for?", "Java Virtual Machine", "Java Visual Machine", "Java Variable Machine", "None", "Java Virtual Machine"},
-        {"What is 5 + 3?", "7", "8", "9", "10", "8"}
-    };
+public class Main {
 
-    int index = 0, score = 0, timeLeft = 30;
-    JLabel questionLabel, timerLabel;
-    JRadioButton opt1, opt2, opt3, opt4;
-    ButtonGroup options;
-    JButton nextButton, submitButton;
-    Timer timer;
+    // Question class to hold question text and options
+    static class Question {
+        String questionText;
+        String[] options;
+        int correctAnswerIndex;
 
-    public OnlineExamination() {
-        setTitle("Online Examination System");
-        setSize(500, 300);
-        setLayout(new GridLayout(6, 1));
-
-        questionLabel = new JLabel();
-        timerLabel = new JLabel("Time left: " + timeLeft + "s", JLabel.RIGHT);
-
-        opt1 = new JRadioButton();
-        opt2 = new JRadioButton();
-        opt3 = new JRadioButton();
-        opt4 = new JRadioButton();
-        options = new ButtonGroup();
-        options.add(opt1);
-        options.add(opt2);
-        options.add(opt3);
-        options.add(opt4);
-
-        nextButton = new JButton("Next");
-        submitButton = new JButton("Submit");
-
-        nextButton.addActionListener(this);
-        submitButton.addActionListener(this);
-
-        add(timerLabel);
-        add(questionLabel);
-        add(opt1);
-        add(opt2);
-        add(opt3);
-        add(opt4);
-        add(nextButton);
-        add(submitButton);
-
-        loadQuestion();
-
-        timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                timeLeft--;
-                timerLabel.setText("Time left: " + timeLeft + "s");
-                if (timeLeft <= 0) {
-                    timer.cancel();
-                    endExam();
-                }
-            }
-        }, 1000, 1000);
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setVisible(true);
-    }
-
-    public void loadQuestion() {
-        if (index < questions.length) {
-            questionLabel.setText(questions[index][0]);
-            opt1.setText(questions[index][1]);
-            opt2.setText(questions[index][2]);
-            opt3.setText(questions[index][3]);
-            opt4.setText(questions[index][4]);
-            options.clearSelection();
-        } else {
-            endExam();
+        public Question(String questionText, String[] options, int correctAnswerIndex) {
+            this.questionText = questionText;
+            this.options = options;
+            this.correctAnswerIndex = correctAnswerIndex;
         }
-    }
 
-    public void checkAnswer() {
-        String selected = null;
-        if (opt1.isSelected()) selected = opt1.getText();
-        else if (opt2.isSelected()) selected = opt2.getText();
-        else if (opt3.isSelected()) selected = opt3.getText();
-        else if (opt4.isSelected()) selected = opt4.getText();
-
-        if (selected != null && selected.equals(questions[index][5])) {
-            score++;
-        }
-    }
-
-    public void endExam() {
-        timer.cancel();
-        JOptionPane.showMessageDialog(this, "Exam Over! Your score: " + score + "/" + questions.length);
-        System.exit(0);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == nextButton) {
-            checkAnswer();
-            index++;
-            loadQuestion();
-        } else if (e.getSource() == submitButton) {
-            checkAnswer();
-            endExam();
+        // Method to check if the answer is correct
+        public boolean isCorrectAnswer(int answerIndex) {
+            return answerIndex == correctAnswerIndex;
         }
     }
 
     public static void main(String[] args) {
-        new OnlineExamination();
+        Scanner scanner = new Scanner(System.in);
+
+        // Sample questions for the examination
+        Question[] questions = {
+            new Question("What is the capital of France?", 
+                         new String[]{"1. Berlin", "2. Madrid", "3. Paris", "4. Rome"}, 3),
+            new Question("Which planet is known as the Red Planet?", 
+                         new String[]{"1. Earth", "2. Mars", "3. Venus", "4. Jupiter"}, 2),
+            new Question("Who wrote 'Hamlet'?", 
+                         new String[]{"1. William Shakespeare", "2. Charles Dickens", "3. Mark Twain", "4. Jane Austen"}, 1)
+        };
+
+        int score = 0;
+
+        // Displaying questions and getting user answers
+        for (int i = 0; i < questions.length; i++) {
+            System.out.println("Question " + (i + 1) + ": " + questions[i].questionText);
+            for (String option : questions[i].options) {
+                System.out.println(option);
+            }
+            System.out.print("Enter your answer (1-4): ");
+            int answer = scanner.nextInt();
+
+            if (questions[i].isCorrectAnswer(answer)) {
+                System.out.println("Correct!\n");
+                score++;
+            } else {
+                System.out.println("Incorrect. The correct answer is: " + questions[i].options[questions[i].correctAnswerIndex - 1] + "\n");
+            }
+        }
+
+        // Displaying the final score
+        System.out.println("Your final score is: " + score + "/" + questions.length);
+        scanner.close();
     }
 }
