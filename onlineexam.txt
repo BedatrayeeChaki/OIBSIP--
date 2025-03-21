@@ -1,83 +1,119 @@
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class ATMInterface {
+public class OnlineExamination extends JFrame implements ActionListener {
+    String[][] questions = {
+        {"What is the capital of India?", "Delhi", "Mumbai", "Kolkata", "Chennai", "Delhi"},
+        {"Who invented Java?", "James Gosling", "Dennis Ritchie", "Bjarne Stroustrup", "Guido van Rossum", "James Gosling"},
+        {"Which data structure follows FIFO?", "Queue", "Stack", "Tree", "Graph", "Queue"},
+        {"What does JVM stand for?", "Java Virtual Machine", "Java Visual Machine", "Java Variable Machine", "None", "Java Virtual Machine"},
+        {"What is 5 + 3?", "7", "8", "9", "10", "8"}
+    };
 
-    private static double balance = 1000; // Initial balance for demonstration
-    private static int pin = 1234; // Pre-set pin
+    int index = 0, score = 0, timeLeft = 30;
+    JLabel questionLabel, timerLabel;
+    JRadioButton opt1, opt2, opt3, opt4;
+    ButtonGroup options;
+    JButton nextButton, submitButton;
+    Timer timer;
+
+    public OnlineExamination() {
+        setTitle("Online Examination System");
+        setSize(500, 300);
+        setLayout(new GridLayout(6, 1));
+
+        questionLabel = new JLabel();
+        timerLabel = new JLabel("Time left: " + timeLeft + "s", JLabel.RIGHT);
+
+        opt1 = new JRadioButton();
+        opt2 = new JRadioButton();
+        opt3 = new JRadioButton();
+        opt4 = new JRadioButton();
+        options = new ButtonGroup();
+        options.add(opt1);
+        options.add(opt2);
+        options.add(opt3);
+        options.add(opt4);
+
+        nextButton = new JButton("Next");
+        submitButton = new JButton("Submit");
+
+        nextButton.addActionListener(this);
+        submitButton.addActionListener(this);
+
+        add(timerLabel);
+        add(questionLabel);
+        add(opt1);
+        add(opt2);
+        add(opt3);
+        add(opt4);
+        add(nextButton);
+        add(submitButton);
+
+        loadQuestion();
+
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                timeLeft--;
+                timerLabel.setText("Time left: " + timeLeft + "s");
+                if (timeLeft <= 0) {
+                    timer.cancel();
+                    endExam();
+                }
+            }
+        }, 1000, 1000);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+    }
+
+    public void loadQuestion() {
+        if (index < questions.length) {
+            questionLabel.setText(questions[index][0]);
+            opt1.setText(questions[index][1]);
+            opt2.setText(questions[index][2]);
+            opt3.setText(questions[index][3]);
+            opt4.setText(questions[index][4]);
+            options.clearSelection();
+        } else {
+            endExam();
+        }
+    }
+
+    public void checkAnswer() {
+        String selected = null;
+        if (opt1.isSelected()) selected = opt1.getText();
+        else if (opt2.isSelected()) selected = opt2.getText();
+        else if (opt3.isSelected()) selected = opt3.getText();
+        else if (opt4.isSelected()) selected = opt4.getText();
+
+        if (selected != null && selected.equals(questions[index][5])) {
+            score++;
+        }
+    }
+
+    public void endExam() {
+        timer.cancel();
+        JOptionPane.showMessageDialog(this, "Exam Over! Your score: " + score + "/" + questions.length);
+        System.exit(0);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == nextButton) {
+            checkAnswer();
+            index++;
+            loadQuestion();
+        } else if (e.getSource() == submitButton) {
+            checkAnswer();
+            endExam();
+        }
+    }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Welcome to ATM!");
-        
-        // Ask user to enter PIN
-        System.out.print("Enter your PIN: ");
-        int enteredPin = scanner.nextInt();
-
-        // Check if the entered PIN is correct
-        if (enteredPin != pin) {
-            System.out.println("Incorrect PIN. Try again.");
-            return; // Exit if pin is wrong
-        }
-
-        // Display menu
-        while (true) {
-            System.out.println("\nATM Menu:");
-            System.out.println("1. Check Balance");
-            System.out.println("2. Deposit Money");
-            System.out.println("3. Withdraw Money");
-            System.out.println("4. Exit");
-            System.out.print("Please choose an option (1-4): ");
-            int choice = scanner.nextInt();
-
-            switch (choice) {
-                case 1:
-                    checkBalance();
-                    break;
-                case 2:
-                    depositMoney(scanner);
-                    break;
-                case 3:
-                    withdrawMoney(scanner);
-                    break;
-                case 4:
-                    System.out.println("Thank you for using ATM. Goodbye!");
-                    scanner.close();
-                    return; // Exit the program
-                default:
-                    System.out.println("Invalid choice. Please select again.");
-            }
-        }
-    }
-
-    // Check balance
-    private static void checkBalance() {
-        System.out.println("Your current balance is: $" + balance);
-    }
-
-    // Deposit money
-    private static void depositMoney(Scanner scanner) {
-        System.out.print("Enter amount to deposit: $");
-        double depositAmount = scanner.nextDouble();
-        if (depositAmount <= 0) {
-            System.out.println("Invalid amount. Deposit failed.");
-        } else {
-            balance += depositAmount;
-            System.out.println("Successfully deposited $" + depositAmount);
-        }
-    }
-
-    // Withdraw money
-    private static void withdrawMoney(Scanner scanner) {
-        System.out.print("Enter amount to withdraw: $");
-        double withdrawAmount = scanner.nextDouble();
-        if (withdrawAmount <= 0) {
-            System.out.println("Invalid amount. Withdrawal failed.");
-        } else if (withdrawAmount > balance) {
-            System.out.println("Insufficient balance. Withdrawal failed.");
-        } else {
-            balance -= withdrawAmount;
-            System.out.println("Successfully withdrew $" + withdrawAmount);
-        }
+        new OnlineExamination();
     }
 }
